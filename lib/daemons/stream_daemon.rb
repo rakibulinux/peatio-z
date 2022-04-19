@@ -9,7 +9,7 @@ logger = Rails.logger
 
 consumer = ::Stream.consumer
 
-at_exit { consumer.close }
+at_exit { consumer.stop }
 
 def get_worker(id)
   ::Workers::Engines.const_get(id.to_s.camelize).new
@@ -20,18 +20,14 @@ ARGV.each do |id|
   worker = get_worker(id)
 
   consumer.subscribe(id)
-
-  loop do
-    message = consumer.poll(100)
-
-    next if message.nil?
-
-    logger.info { "Received: #{message.payload}" }
-
+  consumer.each_message(automatically_mark_as_processed: false) do |message|
+    logger.info { "Received: #{message.value}" }
     begin
       payload = JSON.parse(message.payload)
 
       worker.process(payload)
+
+      consumer.mark_message_as_processed(message)
     rescue StandardError => e
       if worker.is_db_connection_error?(e)
         logger.error(db: :unhealthy, message: e.message)
@@ -40,8 +36,6 @@ ARGV.each do |id|
 
       report_exception(e)
     end
-
-    @consumer.commit(nil, true)
   end
 
   workers << worker
@@ -54,5 +48,3 @@ end
     workers.each {|w| w.send handler if w.respond_to?(handler) }
   end
 end
-
-ch.work_pool.join
