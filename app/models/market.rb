@@ -145,7 +145,7 @@ class Market < ApplicationRecord
   before_validation(on: :create) { self.position = Market.count + 1 unless position.present? }
 
   after_commit do
-    Stream.producer.produce(topic: "matching", action: 'new', market: symbol)
+    Stream.produce("matching", { action: 'new', market: symbol }.to_json)
   end
   after_commit :wipe_cache
   after_create { insert_position(self) }
