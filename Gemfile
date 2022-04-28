@@ -6,7 +6,7 @@ source 'https://rubygems.org'
 ruby '~> 2.6'
 
 gem 'ransack', '~> 2.3.2'
-gem 'rails', '~> 5.2.4.5'
+gem 'rails', '~> 5.2.7.1'
 gem 'puma', '~> 4.3.8'
 gem 'mysql2', '~> 0.5.2'
 gem 'redis', '~> 4.1.2', require: ['redis', 'redis/connection/hiredis']
@@ -16,7 +16,7 @@ gem 'hashie', '~> 3.6.0'
 gem 'aasm', '~> 5.0.8'
 gem 'cancancan', '~> 3.1.0'
 gem 'enumerize', '~> 2.2.2'
-gem 'kaminari', '~> 1.2.1'
+gem 'kaminari', '~> 1.2.2'
 gem 'rbtree', '~> 0.4.2'
 gem 'grape', '~> 1.3.1'
 gem 'grape-entity', '~> 0.7.1'
@@ -72,12 +72,12 @@ group :development do
 end
 
 group :test do
-  gem 'rspec-rails', '~> 3.8', '>= 3.8.2'
+  gem 'rspec-rails', '~> 3.9', '>= 3.9.0'
   gem 'rspec-retry',         '~> 0.6'
   gem 'webmock',             '~> 3.5'
   gem 'database_cleaner',    '~> 1.7'
   gem 'mocha',               '~> 1.8', require: false
-  gem 'factory_bot_rails', '~> 5.0', '>= 5.0.2'
+  gem 'factory_bot_rails', '~> 5.2', '>= 5.2.0'
   gem 'timecop',             '~> 0.9'
   gem 'rubocop-rspec',       '~> 1.32', require: false
 end
