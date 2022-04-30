@@ -75,6 +75,14 @@ module API
                    type: { value: Integer, message: 'account.withdraw.non_integer_otp' },
                    allow_blank: false,
                    desc: 'OTP to perform action'
+          requires :email_code,
+                   type: { value: Integer, message: 'account.withdraw.non_integer_email_code' },
+                   allow_blank: false,
+                   desc: 'Email code to perform action'
+          optional :phone_code,
+                   type: { value: Integer, message: 'account.withdraw.non_integer_phone_code' },
+                   allow_blank: false,
+                   desc: 'Phone code to perform action'
           optional :beneficiary_id,
                    type: { value: Integer, message: 'account.withdraw.non_integer_beneficiary_id' },
                    allow_blank: false,
@@ -109,6 +117,23 @@ module API
           unless Vault::TOTP.validate?(current_user.uid, params[:otp])
             error!({ errors: ['account.withdraw.invalid_otp'] }, 422)
           end
+
+          #============VERIFY CODE================#
+          phone_response = http_client('http://barong:8001/api/v2/management')
+            .public_send(:post, '/phones/get', generate_jwt_management({ :uid => current_user.uid }))
+
+          if phone_response.status == 200
+            verify_response = http_client('http://barong:8001/api/v2/management')
+              .public_send(:post, '/code/verify_code', generate_jwt_management({ :uid => current_user.uid, :type => 'phone', category: 'withdrawal', code: params[:phone_code] }))
+
+            error!({ errors: ['account.withdraw.invalid_phone_code'] }, 422) unless verify_response.status == 200
+          end
+
+          verify_response = http_client('http://barong:8001/api/v2/management')
+            .public_send(:post, '/code/verify_code', generate_jwt_management({ :uid => current_user.uid, :type => 'email', category: 'withdrawal', code: params[:email_code] }))
+
+          error!({ errors: ['account.withdraw.invalid_email_code'] }, 422) unless verify_response.status == 200
+          #============VERIFY CODE================#
 
           currency = Currency.find(params[:currency])
 

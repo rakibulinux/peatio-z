@@ -15,9 +15,7 @@ module Operations
 
     # Notify third party trading engine about member balance update.
     after_commit on: :create do
-      Stream.enqueue(:events_processor,
-                        subject: :operation,
-                        payload: as_json_for_events_processor)
+      Stream.produce(as_json_for_events_processor, "events_processor")
     end
 
     def as_json_for_events_processor

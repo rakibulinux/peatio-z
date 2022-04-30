@@ -126,7 +126,7 @@ class Order < ApplicationRecord
         order.record_submit_operations!
         order.update!(state: ::Order::WAIT)
 
-        Stream.enqueue(:matching, action: 'submit', order: order.to_matching_attributes)
+        Stream.enqueue({ action: 'submit', order: order.to_matching_attributes }, "matching")
       end
     rescue => e
       order = find_by_id!(id)
@@ -185,18 +185,11 @@ class Order < ApplicationRecord
     return trigger_third_party_creation unless market.engine.peatio_engine?
 
     save!
-    Stream.enqueue(:order_processor,
-                        { action: 'submit', order: attributes },
-                        { persistent: false })
+    Stream.produce({ action: 'submit', order: attributes }, "order_processor")
   end
 
   def trigger_third_party_creation
-    return unless new_record?
-
-    self.uuid ||= UUID.generate
-    self.created_at ||= Time.now
-
-    Stream.publish(market.engine.driver, data: as_json_for_third_party, type: THIRD_PARTY_ORDER_ACTION_TYPE['submit_single'])
+    return
   end
 
   def trigger_cancellation
@@ -204,13 +197,11 @@ class Order < ApplicationRecord
   end
 
   def trigger_internal_cancellation
-    Stream.enqueue(:matching, action: 'cancel', order: to_matching_attributes)
+    Stream.produce({ action: 'cancel', order: to_matching_attributes }, "matching")
   end
 
   def trigger_third_party_cancellation
-    Stream.publish(market.engine.driver,
-                        data: as_json_for_third_party,
-                        type: THIRD_PARTY_ORDER_ACTION_TYPE['cancel_single'])
+    return
   end
 
   def trades

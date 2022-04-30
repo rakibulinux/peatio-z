@@ -331,7 +331,7 @@ class Withdraw < ApplicationRecord
   end
 
   def send_coins!
-    Stream.enqueue(:withdraw_coin, id: id) if currency.coin?
+    ::Stream.produce({ id: id }, "withdraw_coin") if currency.coin?
   end
 end
 

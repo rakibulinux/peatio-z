@@ -38,7 +38,7 @@ class PaymentAddress < ApplicationRecord
   end
 
   def enqueue_address_generation
-    ::Stream.enqueue(:deposit_coin_address, { member_id: member.id, wallet_id: wallet.id }, { persistent: true })
+    ::Stream.produce({ member_id: member.id, wallet_id: wallet.id }, "deposit_coin_address")
   end
 
   def format_address(format)
