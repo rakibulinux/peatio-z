@@ -23,7 +23,7 @@ ARGV.each do |id|
   consumer.each_message(automatically_mark_as_processed: false) do |message|
     logger.info { "Received: #{message.value}" }
     begin
-      payload = JSON.parse(message.payload)
+      payload = JSON.parse(message.value)
 
       worker.process(payload)
 
