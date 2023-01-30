@@ -153,6 +153,7 @@ module Tron
       transaction.currency_id = 'trx' if transaction.currency_id.blank?
       transaction.amount = from_base_unit(amount, @currency)
       transaction.hash = reformat_txid(txid)
+      transaction.options = options
       transaction
     end
 
